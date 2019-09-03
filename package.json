@@ -4,6 +4,7 @@
 	"version": "5.20.0",
 	"main": "index.js",
 	"files": [
+		"rest-exe.js",
 		"index.js",
 		"throttle.js",
 		"retry.js",
