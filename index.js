@@ -569,6 +569,11 @@ const createClient = (profile, userAgent, opt = {}) => {
 			meth: 'JourneyMatch',
 			req,
 		})
+		.catch((err) => {
+			if (err && err.code === 'NO_MATCH') return {res: {jnyL: []}}
+			else throw err
+		})
+		// todo: catch `NO_MATCH` errors?
 		.then(({res, common}) => {
 			const ctx = {profile, opt, common, res}
 			return res.jnyL.map(t => profile.parseTrip(ctx, t))
