@@ -4,7 +4,7 @@ const trim = require('lodash/trim')
 const uniqBy = require('lodash/uniqBy')
 const slugg = require('slugg')
 const without = require('lodash/without')
-const {parseHook} = require('../../lib/profile-hooks')
+const { parseHook } = require('../../lib/profile-hooks')
 
 const _parseJourney = require('../../parse/journey')
 const _parseJourneyLeg = require('../../parse/journey-leg')
@@ -14,7 +14,7 @@ const _parseDeparture = require('../../parse/departure')
 const _parseHint = require('../../parse/hint')
 const _parseLocation = require('../../parse/location')
 const _formatStation = require('../../format/station')
-const {bike} = require('../../format/filters')
+const { bike } = require('../../format/filters')
 
 const products = require('./products')
 const baseProfile = require('./base.json')
@@ -24,14 +24,14 @@ const transformReqBody = (ctx, body) => {
 	const req = body.svcReqL[0] || {}
 
 	// see https://pastebin.com/qZ9WS3Cx
-	req.cfg = {...req.cfg, rtMode: 'HYBRID'} // todo: use `REALTIME`?
+	req.cfg = { ...req.cfg, rtMode: 'HYBRID' } // todo: use `REALTIME`?
 
 	return body
 }
 
 const slices = (n, arr) => {
-	const initialState = {slices: [], count: Infinity}
-	return arr.reduce(({slices, count}, item) => {
+	const initialState = { slices: [], count: Infinity }
+	return arr.reduce(({ slices, count }, item) => {
 		if (count >= n) {
 			slices.push([item])
 			count = 1
@@ -39,7 +39,7 @@ const slices = (n, arr) => {
 			slices[slices.length - 1].push(item)
 			count++
 		}
-		return {slices, count}
+		return { slices, count }
 	}, initialState).slices
 }
 
@@ -85,7 +85,7 @@ const parseAusstattungGrid = (g) => {
 	const rows = uniqBy(g.rows, ([key, val]) => key + ':' + val)
 
 	const res = {}
-	Object.defineProperty(res, 'raw', {value: rows})
+	Object.defineProperty(res, 'raw', { value: rows })
 	for (let [key, val] of rows) {
 		key = ausstattungKeys[slugg(key)]
 		if (key) res[key] = parseAusstattungVal(val)
@@ -100,7 +100,7 @@ const parseReisezentrumÖffnungszeiten = (g) => {
 	return res
 }
 
-const parseLocWithDetails = ({parsed, common}, l) => {
+const parseLocWithDetails = ({ parsed, common }, l) => {
 	if (!parsed) return parsed
 	if (parsed.type !== 'stop' && parsed.type !== 'station') return parsed
 
@@ -111,8 +111,8 @@ const parseLocWithDetails = ({parsed, common}, l) => {
 		})
 
 		let grids = l.gridL
-		.map(grid => parseGrid(grid, common))
-		.map(resolveCells)
+			.map(grid => parseGrid(grid, common))
+			.map(resolveCells)
 
 		const ausstattung = grids.find(g => slugg(g.title) === 'ausstattung')
 		if (ausstattung) {
@@ -143,7 +143,7 @@ const parseLoadFactor = (opt, tcocL, tcocX) => {
 	return load && loadFactors[load.r] || null
 }
 
-const parseArrOrDepWithLoadFactor = ({parsed, res, opt}, d) => {
+const parseArrOrDepWithLoadFactor = ({ parsed, res, opt }, d) => {
 	if (d.stbStop.dTrnCmpSX && Array.isArray(d.stbStop.dTrnCmpSX.tcocX)) {
 		const load = parseLoadFactor(opt, res.common.tcocL || [], d.stbStop.dTrnCmpSX.tcocX)
 		if (load) parsed.loadFactor = load
@@ -151,7 +151,7 @@ const parseArrOrDepWithLoadFactor = ({parsed, res, opt}, d) => {
 	return parsed
 }
 
-const transformJourneysQuery = ({opt}, query) => {
+const transformJourneysQuery = ({ opt }, query) => {
 	const filters = query.jnyFltrL
 	if (opt.bike) filters.push(bike)
 
@@ -180,7 +180,7 @@ const transformJourneysQuery = ({opt}, query) => {
 // 	product: 'bus',
 // 	operator: {type: 'operator', id: 'nahreisezug', name: 'Nahreisezug'}
 // }
-const parseLineWithAdditionalName = ({parsed}, l) => {
+const parseLineWithAdditionalName = ({ parsed }, l) => {
 	if (l.nameS && ['bus', 'tram', 'ferry'].includes(l.product)) {
 		parsed.name = l.nameS
 	}
@@ -193,7 +193,7 @@ const parseLineWithAdditionalName = ({parsed}, l) => {
 
 // todo: sotRating, conSubscr, isSotCon, showARSLink, sotCtxt
 // todo: conSubscr, showARSLink, useableTime
-const parseJourneyWithPrice = ({parsed}, raw) => {
+const parseJourneyWithPrice = ({ parsed }, raw) => {
 	parsed.price = null
 	// todo: find cheapest, find discounts
 	// todo: write a parser like vbb-parse-ticket
@@ -217,6 +217,7 @@ const parseJourneyWithPrice = ({parsed}, raw) => {
 	//     }
 	//   ]
 	// }
+
 	if (
 		raw.trfRes &&
 		Array.isArray(raw.trfRes.fareSetL) &&
@@ -225,19 +226,23 @@ const parseJourneyWithPrice = ({parsed}, raw) => {
 		raw.trfRes.fareSetL[0].fareL[0]
 	) {
 		const tariff = raw.trfRes.fareSetL[0].fareL[0]
-		if (tariff.price && tariff.price.amount >= 0) { // wat
+		if (tariff.prc >= 0) {
+			parsed.price = { amount: tariff.prc / 100, currency: 'EUR', hint: null }
+		}
+		else if (tariff.price?.amount >= 0) { // wat
 			parsed.price = {
 				amount: tariff.price.amount / 100,
 				currency: 'EUR',
 				hint: null
 			}
 		}
+
 	}
 
 	return parsed
 }
 
-const parseJourneyLegWithLoadFactor = ({parsed, res, opt}, raw) => {
+const parseJourneyLegWithLoadFactor = ({ parsed, res, opt }, raw) => {
 	const tcocX = raw.jny && raw.jny.dTrnCmpSX && raw.jny.dTrnCmpSX.tcocX
 	if (Array.isArray(tcocX) && Array.isArray(res.common.tcocL)) {
 		const load = parseLoadFactor(opt, res.common.tcocL, tcocX)
@@ -447,16 +452,16 @@ const codesByText = Object.assign(Object.create(null), {
 	'platform change': 'changed platform', // todo: use dash, German variant
 })
 
-const parseHintByCode = ({parsed}, raw) => {
+const parseHintByCode = ({ parsed }, raw) => {
 	// plain-text hints used e.g. for stop metadata
 	if (raw.type === 'K') {
-		return {type: 'hint', text: raw.txtN}
+		return { type: 'hint', text: raw.txtN }
 	}
 
 	if (raw.type === 'A') {
 		const hint = hintsByCode[raw.code && raw.code.trim().toLowerCase()]
 		if (hint) {
-			return Object.assign({text: raw.txtN}, hint)
+			return Object.assign({ text: raw.txtN }, hint)
 		}
 	}
 

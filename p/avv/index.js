@@ -1,6 +1,15 @@
 'use strict'
 
 const baseProfile = require('./base.json')
+const products = require('./products')
+const _parseJourney = require('../../parse/journey')
+const { parseHook } = require('../../lib/profile-hooks')
+
+const parseJourneyWithTickets = ({ parsed }, j) => {
+	const parsedCpy = { ...parsed, price: j.trfRes?.totalPrice?.amount };
+
+	return parsedCpy;
+}
 
 const products = [{
 	id: 'regional-train',
@@ -88,7 +97,7 @@ const avvProfile = {
 	ver: '1.26',
 
 	products,
-
+	parseJourney: parseHook(_parseJourney, parseJourneyWithTickets),
 	departuresGetPasslist: false,
 	departuresStbFltrEquiv: false,
 	refreshJourneyUseOutReconL: true,

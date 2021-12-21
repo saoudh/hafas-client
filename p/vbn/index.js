@@ -2,6 +2,13 @@
 
 const baseProfile = require('./base.json')
 const products = require('./products')
+const _parseJourney = require('../../parse/journey')
+const { parseHook } = require('../../lib/profile-hooks')
+
+const parseJourneyWithTickets = ({ parsed }, j) => {
+	const parsedCpy = { ...parsed, price: j.trfRes?.totalPrice?.amount };
+	return parsedCpy;
+}
 
 const insaProfile = {
 	...baseProfile,
@@ -13,7 +20,7 @@ const insaProfile = {
 	addMicMac: true,
 
 	products: products,
-
+	parseJourney: parseHook(_parseJourney, parseJourneyWithTickets),
 	trip: true,
 	radar: true,
 	reachableFrom: true,
