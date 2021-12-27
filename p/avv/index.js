@@ -1,7 +1,6 @@
 'use strict'
 
 const baseProfile = require('./base.json')
-const products = require('./products')
 const _parseJourney = require('../../parse/journey')
 const { parseHook } = require('../../lib/profile-hooks')
 
