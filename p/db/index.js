@@ -225,7 +225,12 @@ const parseJourneyWithPrice = ({ parsed }, raw) => {
 		Array.isArray(raw.trfRes.fareSetL[0].fareL) &&
 		raw.trfRes.fareSetL[0].fareL[0]
 	) {
-		const tariff = raw.trfRes.fareSetL[0].fareL[0]
+		const tariff = raw.trfRes.fareSetL[0].fareL[0];
+		parsed.verbundName = tariff.verbundName;
+		parsed.isPartialPrice = tariff.isPartPrice;
+		parsed.isFromPrice = tariff.isFromPrice;
+		parsed.isReturnedPriceComplete = tariff.retPriceIsCompletePrice;
+
 		if (tariff.prc >= 0) {
 			parsed.price = { amount: tariff.prc / 100, currency: 'EUR', hint: null }
 		}
