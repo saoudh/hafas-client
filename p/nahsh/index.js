@@ -30,32 +30,40 @@ const parseJourneyWithTickets = ({parsed}, j) => {
 		Array.isArray(j.trfRes.fareSetL) &&
 		j.trfRes.fareSetL.length > 0
 	) {
-		parsed.tickets = []
+		/* there might be always just one element in the fareSetL-Array, which is the SH-Tariff
+		retrieving price for the single ticket for basic 2nd class if available, otherwise "undefined"
+		*/
+		let singleTicket = j.trfRes.fareSetL[0].fareL.find(ticketType => ticketType.name === "Einzelkarte 2.Kl");
+		let price = singleTicket?.price?.amount;
+		const parsedCpy = { ...parsed, price: price };
+		return parsedCpy;
 
-		for (let t of j.trfRes.fareSetL) {
-			const tariff = t.desc
-			if (!tariff || !Array.isArray(t.fareL)) continue
-			for (let v of t.fareL) {
-				const variant = v.name
-				if(!variant) continue
-				const ticket = {
-					name: [tariff, variant].join(' - '),
-					tariff,
-					variant
-				}
-				if (v.prc && Number.isInteger(v.prc) && v.cur) {
-					ticket.amount = v.prc/100
-					ticket.currency = v.cur
-				} else {
-					ticket.amount = null
-					ticket.hint = 'No pricing information available.'
-				}
-				parsed.tickets.push(ticket)
-			}
-		}
+		// parsed.tickets = []
+
+		// for (let t of j.trfRes.fareSetL) {
+		// 	const tariff = t.desc
+		// 	if (!tariff || !Array.isArray(t.fareL)) continue
+		// 	for (let v of t.fareL) {
+		// 		const variant = v.name
+		// 		if(!variant) continue
+		// 		const ticket = {
+		// 			name: [tariff, variant].join(' - '),
+		// 			tariff,
+		// 			variant
+		// 		}
+		// 		if (v.prc && Number.isInteger(v.prc) && v.cur) {
+		// 			ticket.amount = v.prc/100
+		// 			ticket.currency = v.cur
+		// 		} else {
+		// 			ticket.amount = null
+		// 			ticket.hint = 'No pricing information available.'
+		// 		}
+		// 		parsed.tickets.push(ticket)
+		// 	}
+		// }
 	}
 
-	return parsed
+	// return parsed
 }
 
 const fixMovement = ({parsed}, m) => {
