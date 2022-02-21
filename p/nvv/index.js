@@ -2,6 +2,14 @@
 
 const baseProfile = require('./base.json')
 const products = require('./products')
+const _parseJourney = require('../../parse/journey')
+const { parseHook } = require('../../lib/profile-hooks')
+
+const parseJourneyWithTickets = ({ parsed }, j) => {
+	const parsedCpy = { ...parsed, price: j.trfRes?.totalPrice?.amount };
+
+	return parsedCpy;
+}
 
 const nvvProfile = {
 	...baseProfile,
@@ -9,6 +17,7 @@ const nvvProfile = {
 	timezone: 'Europe/Berlin',
 
 	products: products,
+	parseJourney: parseHook(_parseJourney, parseJourneyWithTickets),
 
 	departuresGetPasslist: false,
 	departuresStbFltrEquiv: false,
