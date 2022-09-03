@@ -16,13 +16,13 @@ const testJourneysStationToStation = require('./lib/journeys-station-to-station'
 const testJourneysStationToAddress = require('./lib/journeys-station-to-address')
 const testJourneysStationToPoi = require('./lib/journeys-station-to-poi')
 const testEarlierLaterJourneys = require('./lib/earlier-later-journeys')
-const testRefreshJourney = require('./lib/refresh-journey')
 const journeysFailsWithNoProduct = require('./lib/journeys-fails-with-no-product')
 const testJourneysWithDetour = require('./lib/journeys-with-detour')
 const testDepartures = require('./lib/departures')
 const testDeparturesInDirection = require('./lib/departures-in-direction')
 
-const when = createWhen('Europe/Berlin', 'de-DE')
+const T_MOCK = 1641897000 * 1000 // 2022-01-11T11:30:00+01
+const when = createWhen(saarfahrplanProfile.timezone, saarfahrplanProfile.locale, T_MOCK)
 
 const cfg = {
 	when,
@@ -120,15 +120,14 @@ tap.test('Saarbrücken Hbf to Schlossberghöhlen', async (t) => {
 	t.end()
 })
 
-tap.skip('journeys: via works – with detour', async (t) => {
-	// Going from Stephansplatz to Schottenring via Donauinsel without detour
+tap.test('journeys: via works – with detour', async (t) => {
+	// Going from Lessingstr. to An der Trift via Steubenstr. without detour
 	// is currently impossible. We check if the routing engine computes a detour.
-	const stephansplatz = '1390167' // todo: does not exist anymore?
-	const schottenring = '1390163' // todo: does not exist anymore?
-	const donauinsel = '1392277' // todo: does not exist anymore?
-	const donauinselPassed = '922001'
-	const res = await client.journeys(stephansplatz, schottenring, {
-		via: donauinsel,
+	const lessingstr = '10615'
+	const anDerTrift = '10801'
+	const steubenstr = '10051'
+	const res = await client.journeys(lessingstr, anDerTrift, {
+		via: steubenstr,
 		results: 1,
 		departure: when,
 		stopovers: true
@@ -138,7 +137,7 @@ tap.skip('journeys: via works – with detour', async (t) => {
 		test: t,
 		res,
 		validate,
-		detourIds: [donauinsel, donauinselPassed]
+		detourIds: [steubenstr],
 	})
 	t.end()
 })
@@ -177,21 +176,12 @@ tap.test('departures', async (t) => {
 		duration: 5, when
 	})
 
-	validate(t, departures, 'departures', 'departures')
-	t.ok(departures.length > 0, 'must be >0 departures')
-	for (let i = 0; i < departures.length; i++) {
-		let stop = departures[i].stop
-		let name = `departures[${i}].stop`
-		if (stop.station) {
-			stop = stop.station
-			name += '.station'
-		}
-
-		t.equal(stop.id, saarbrueckenUhlandstr, name + '.id is invalid')
-	}
-
-	// todo: move into deps validator
-	t.same(departures, departures.sort((a, b) => t.when > b.when))
+	await testDepartures({
+		test: t,
+		departures,
+		validate,
+		id: saarbrueckenUhlandstr,
+	})
 	t.end()
 })
 

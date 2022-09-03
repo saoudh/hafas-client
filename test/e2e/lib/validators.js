@@ -9,6 +9,17 @@ const {assertValidWhen} = require('./util')
 const isObj = o => o !== null && 'object' === typeof o && !Array.isArray(o)
 const is = val => val !== null && val !== undefined
 
+const createValidateProducts = (cfg) => {
+	const validateProducts = (val, p, name = 'products') => {
+		a.ok(isObj(p), name + ' must be an object')
+		for (let product of cfg.products) {
+			const msg = `${name}[${product.id}] must be a boolean`
+			a.strictEqual(typeof p[product.id], 'boolean', msg)
+		}
+	}
+	return validateProducts
+}
+
 const createValidateStation = (cfg) => {
 	const validateStation = (val, s, name = 'station') => {
 		defaultValidators.station(val, s, name)
@@ -16,11 +27,7 @@ const createValidateStation = (cfg) => {
 		if (!cfg.stationCoordsOptional) {
 			a.ok(is(s.location), `missing ${name}.location`)
 		}
-		a.ok(isObj(s.products), name + '.products must be an object')
-		for (let product of cfg.products) {
-			const msg = name + `.products[${product.id}] must be a boolean`
-			a.strictEqual(typeof s.products[product.id], 'boolean', msg)
-		}
+		val.products(val, s.products, name + '.products')
 
 		if ('lines' in s) {
 			a.ok(Array.isArray(s.lines), name + `.lines must be an array`)
@@ -98,6 +105,55 @@ const createValidateLine = (cfg) => {
 	return validateLine
 }
 
+const validateRemark = (val, rem, name = 'remark') => {
+	a.ok(isObj(rem), name + ' must be an object')
+	a.strictEqual(typeof rem.id, 'string', name + '.id must be a string')
+	a.ok(rem.id, name + '.id must not be empty')
+	if (rem.summary !== null) {
+		a.strictEqual(typeof rem.summary, 'string', name + '.summary must be a string')
+		a.ok(rem.summary, name + '.summary must not be empty')
+	}
+	if (rem.text !== null) {
+		a.strictEqual(typeof rem.text, 'string', name + '.text must be a string')
+		a.ok(rem.text, name + '.text must not be empty')
+	}
+	if ('validFrom' in rem) {
+		a.strictEqual(typeof rem.validFrom, 'string', name + '.validFrom must be a string')
+		a.ok(Number.isInteger(Date.parse(rem.validFrom)), name + '.validFrom must be ISO 8601')
+	}
+	if ('validUntil' in rem) {
+		a.strictEqual(typeof rem.validUntil, 'string', name + '.validUntil must be a string')
+		a.ok(Number.isInteger(Date.parse(rem.validUntil)), name + '.validUntil must be ISO 8601')
+	}
+	if ('modified' in rem) {
+		a.strictEqual(typeof rem.modified, 'string', name + '.modified must be a string')
+		a.ok(Number.isInteger(Date.parse(rem.modified)), name + '.modified must be ISO 8601')
+	}
+	if ('products' in rem) {
+		val.products(val, rem.products, name + '.products')
+	}
+	if ('edges' in rem) {
+		a.ok(Array.isArray(rem.edges), name + '.edges must be an array')
+		for (let i = 0; i < rem.edges.length; i++) {
+			const e = rem.edges[i]
+			const n = `${name}.edges[${i}]`
+			a.ok(isObj(e), n + ' must be an object')
+			if (e.fromLocation !== null) {
+				val.location(val, e.fromLocation, n + '.fromLocation')
+			}
+			if (e.toLocation !== null) {
+				val.location(val, e.toLocation, n + '.toLocation')
+			}
+		}
+	}
+	if ('affectedLines' in rem) {
+		a.ok(Array.isArray(rem.affectedLines), name + '.affectedLines must be an array')
+		for (let i = 0; i < rem.affectedLines.length; i++) {
+			val.line(val, rem.affectedLines[i], `${name}.affectedLines[${i}]`)
+		}
+	}
+}
+
 const createValidateStopover = (cfg) => {
 	const validateStopover = (val, s, name = 'stopover') => {
 		if (
@@ -118,6 +174,11 @@ const createValidateStopover = (cfg) => {
 		if (is(s.plannedArrival)) {
 			val.date(val, s.plannedArrival, name + '.plannedArrival')
 			assertValidWhen(s.plannedArrival, cfg.when, name + '.plannedArrival')
+		}
+		if (is(s.departurePrognosisType)) {
+			const msg = name + '.departurePrognosisType must '
+			a.strictEqual(typeof s.departurePrognosisType, 'string', msg + 'be a string')
+			a.ok(s.departurePrognosisType, msg + 'not be empty')
 		}
 		if (is(s.plannedDeparture)) {
 			val.date(val, s.plannedDeparture, name + '.plannedDeparture')
@@ -152,6 +213,11 @@ const createValidateStopover = (cfg) => {
 			const msg = name + '.plannedArrivalPlatform must '
 			a.strictEqual(typeof s.plannedArrivalPlatform, 'string', msg + 'be a string')
 			a.ok(s.plannedArrivalPlatform, msg + 'not be empty')
+		}
+		if (is(s.arrivalPrognosisType)) {
+			const msg = name + '.arrivalPrognosisType must '
+			a.strictEqual(typeof s.arrivalPrognosisType, 'string', msg + 'be a string')
+			a.ok(s.arrivalPrognosisType, msg + 'not be empty')
 		}
 		if (is(s.departurePlatform)) {
 			const msg = name + '.departurePlatform must '
@@ -388,10 +454,21 @@ const createValidateArrivalOrDeparture = (type, cfg) => {
 		}
 
 		val.line(val, dep.line, name + '.line')
+
 		if (type === 'departure') {
 			const n = name + '.direction'
 			a.strictEqual(typeof dep.direction, 'string', n + ' must be a string')
 			a.ok(dep.direction, n + ' must not be empty')
+		}
+
+		if (dep.destination !== null) {
+				const lName = name + '.destination'
+				val.location(val, dep.destination, lName)
+		}
+
+		if (dep.origin !== null) {
+				const lName = name + '.origin'
+				val.location(val, dep.origin, lName)
 		}
 	}
 	return validateArrivalOrDeparture
@@ -424,19 +501,21 @@ const createValidateDeparture = (cfg) => {
 	}
 }
 
-const validateArrivals = (val, deps, name = 'arrivals') => {
-	a.ok(Array.isArray(deps), name + ' must be an array')
-	a.ok(deps.length > 0, name + ' must not be empty')
-	for (let i = 0; i < deps.length; i++) {
-		val.arrival(val, deps[i], name + `[${i}]`)
+const _createValidateStationBoardResults = (cfg, validatorsKey) => {
+	const validateStationBoardResults = (val, arrsOrDeps, name) => {
+		a.ok(Array.isArray(arrsOrDeps), name + ' must be an array')
+		a.ok(arrsOrDeps.length > 0, name + ' must not be empty')
+		for (let i = 0; i < arrsOrDeps.length; i++) {
+			val[validatorsKey](val, arrsOrDeps[i], name + `[${i}]`)
+		}
 	}
+	return validateStationBoardResults
 }
-const validateDepartures = (val, deps, name = 'departures') => {
-	a.ok(Array.isArray(deps), name + ' must be an array')
-	a.ok(deps.length > 0, name + ' must not be empty')
-	for (let i = 0; i < deps.length; i++) {
-		val.departure(val, deps[i], name + `[${i}]`)
-	}
+const createValidateArrivals = (cfg) => {
+	return _createValidateStationBoardResults(cfg, 'arrival')
+}
+const createValidateDepartures = (cfg) => {
+	return _createValidateStationBoardResults(cfg, 'departure')
 }
 
 const createValidateMovement = (cfg) => {
@@ -497,6 +576,7 @@ const validateMovements = (val, ms, name = 'movements') => {
 }
 
 module.exports = {
+	products: createValidateProducts,
 	station: createValidateStation,
 	stop: () => validateStop,
 	location: () => validateLocation,
@@ -504,6 +584,7 @@ module.exports = {
 	poi: () => validatePoi,
 	address: () => validateAddress,
 	line: createValidateLine,
+	remark: () => validateRemark,
 	stopover: createValidateStopover,
 	ticket: () => validateTicket,
 	journeyLeg: createValidateJourneyLeg,
@@ -513,8 +594,8 @@ module.exports = {
 	trip: () => validateTrip,
 	arrival: createValidateArrival,
 	departure: createValidateDeparture,
-	departures: () => validateDepartures,
-	arrivals: () => validateArrivals,
+	arrivals: createValidateArrivals,
+	departures: createValidateDepartures,
 	movement: createValidateMovement,
 	movements: () => validateMovements
 }

@@ -8,11 +8,11 @@ const sncbProfile = require('../../p/sncb')
 const products = require('../../p/sncb/products')
 const createValidate = require('./lib/validate-fptf-with')
 const testJourneysStationToStation = require('./lib/journeys-station-to-station')
-const testRefreshJourney = require('./lib/refresh-journey')
 const testArrivals = require('./lib/arrivals')
 const testReachableFrom = require('./lib/reachable-from')
 
-const when = createWhen(sncbProfile.timezone, sncbProfile.locale)
+const T_MOCK = 1641897000 * 1000 // 2022-01-11T11:30:00+01
+const when = createWhen(sncbProfile.timezone, sncbProfile.locale, T_MOCK)
 
 const cfg = {
 	when,
@@ -33,7 +33,7 @@ const bruxellesMidi = '8814001'
 const gentPaddenhoek = {
 	type: 'location',
 	address: 'Gent, Paddenhoek',
-	latitude: 51.0517, longitude: 3.724878,
+	latitude: 51.051691, longitude: 3.724914,
 }
 
 tap.test('journeys – Gent Sant Pieters to Bruxelles Midi', async (t) => {
@@ -75,9 +75,12 @@ tap.test('arrivals at Bruxelles Midi', async (t) => {
 		duration: 10, when
 	})
 
-	validate(t, arrivals, 'arrivals', 'arrivals')
-	t.ok(arrivals.length > 0, 'must be >0 arrivals')
-	t.same(arrivals, arrivals.sort((a, b) => t.when > b.when))
+	await testArrivals({
+		test: t,
+		arrivals,
+		validate,
+		id: bruxellesMidi,
+	})
 	t.end()
 })
 

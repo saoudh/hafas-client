@@ -90,7 +90,7 @@ const parseJourneyLeg = (ctx, pt, date) => { // pt = raw leg
 		res.polyline = profile.parsePolyline(ctx, pt.jny.poly)
 	}
 
-	if (pt.type === 'WALK' || pt.type === 'TRSF' || pt.type === 'DEVI') {
+	if (pt.type === 'WALK' || pt.type === 'TRSF' || pt.type === 'DEVI' || pt.type === 'CHKI') {
 		res.public = true
 		res.walking = true
 		res.distance = pt.gis && pt.gis.dist || null
@@ -99,6 +99,7 @@ const parseJourneyLeg = (ctx, pt, date) => { // pt = raw leg
 			// todo: pt.resState, pt.resRecommendation
 			res.transfer = true
 		}
+		if (pt.type === 'CHKI') res.checkin = true
 
 		// https://gist.github.com/derhuerst/426d4b95aeae701843b1e9c23105b8d4#file-tripsearch-2018-12-05-http-L4207-L4229
 		if (opt.remarks && pt.gis && Array.isArray(pt.gis.msgL)) {
@@ -109,6 +110,7 @@ const parseJourneyLeg = (ctx, pt, date) => { // pt = raw leg
 		res.tripId = pt.jny.jid
 		res.line = pt.jny.line || null
 		// todo [breaking]: don't call parseStationName() here, add parseDirection() hook
+		// todo: support pt.jny.dirL[]
 		res.direction = pt.jny.dirTxt && profile.parseStationName(ctx, pt.jny.dirTxt) || null
 
 		if (pt.jny.pos) {
@@ -123,11 +125,13 @@ const parseJourneyLeg = (ctx, pt, date) => { // pt = raw leg
 		res.arrivalPlatform = arrPl.platform
 		res.plannedArrivalPlatform = arrPl.plannedPlatform
 		if (arrPl.prognosedPlatform) res.prognosedArrivalPlatform = arrPl.prognosedPlatform
+		res.arrivalPrognosisType = profile.parsePrognosisType(ctx, pt.arr.aProgType) || null
 
 		const depPl = profile.parsePlatform(ctx, pt.dep.dPlatfS || (pt.dep.dPltfS !== undefined ? pt.dep.dPltfS.txt : null), pt.dep.dPlatfR || (pt.dep.dPltfR !== undefined ? pt.dep.dPltfR.txt : null), pt.dep.dCncl)
 		res.departurePlatform = depPl.platform
 		res.plannedDeparturePlatform = depPl.plannedPlatform
 		if (depPl.prognosedPlatform) res.prognosedDeparturePlatform = depPl.prognosedPlatform
+		res.departurePrognosisType = profile.parsePrognosisType(ctx, pt.dep.dProgType) || null
 
 		if (opt.stopovers && pt.jny.stopL) {
 			const stopL = pt.jny.stopL

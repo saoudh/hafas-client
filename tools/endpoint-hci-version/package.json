@@ -1,0 +1,13 @@
+{
+	"private": true,
+	"name": "endpoint-hci-version",
+	"version": "1.0.0",
+	"bin": {
+		"hafas-client-endpoint-hci-version": "./cli.js"
+	},
+	"author": "Jannis R <mail@jannisr.de>",
+	"license": "ISC",
+	"dependencies": {
+		"mri": "^1.1.4"
+	}
+}

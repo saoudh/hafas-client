@@ -17,7 +17,8 @@ const testDepartures = require('./lib/departures')
 const testDeparturesInDirection = require('./lib/departures-in-direction')
 const testArrivals = require('./lib/arrivals')
 
-const when = createWhen('Europe/Berlin', 'de-DE')
+const T_MOCK = 1641897000 * 1000 // 2022-01-11T11:30:00+01
+const when = createWhen(hvvProfile.timezone, hvvProfile.locale, T_MOCK)
 
 const cfg = {
 	when,
@@ -40,7 +41,7 @@ const altona = '20626'
 // const stendal = '8010334'
 // const dessau = '8010077'
 
-tap.test('journeys – Hamburg Tiefstack to Hamburg Barmbek', async (t) => {
+tap.skip('journeys – Hamburg Tiefstack to Hamburg Barmbek', async (t) => {
 	const res = await client.journeys(tiefstack, barmbek, {
 		results: 4,
 		departure: when,
@@ -59,7 +60,7 @@ tap.test('journeys – Hamburg Tiefstack to Hamburg Barmbek', async (t) => {
 
 // todo: journeys, only one product
 
-tap.test('journeys – fails with no product', (t) => {
+tap.skip('journeys – fails with no product', (t) => {
 	journeysFailsWithNoProduct({
 		test: t,
 		fetchJourneys: client.journeys,
@@ -71,7 +72,7 @@ tap.test('journeys – fails with no product', (t) => {
 	t.end()
 })
 
-tap.test('Hamburg Tiefstack to Gilbertstr. 30, Hamburg', async (t) => {
+tap.skip('Hamburg Tiefstack to Gilbertstr. 30, Hamburg', async (t) => {
 	const gilbertstr30 = {
 		type: 'location',
 		id: '970026640',
@@ -95,7 +96,7 @@ tap.test('Hamburg Tiefstack to Gilbertstr. 30, Hamburg', async (t) => {
 	t.end()
 })
 
-tap.test('Hamburg Tiefstack to Hamburger Meile', async (t) => {
+tap.skip('Hamburg Tiefstack to Hamburger Meile', async (t) => {
 	const meile = {
 		type: 'location',
 		id: '980001841',
@@ -122,7 +123,7 @@ tap.test('Hamburg Tiefstack to Hamburger Meile', async (t) => {
 // todo: via works – with detour
 // todo: via works – without detour
 
-tap.test('earlier/later journeys', async (t) => {
+tap.skip('earlier/later journeys', async (t) => {
 	await testEarlierLaterJourneys({
 		test: t,
 		fetchJourneys: client.journeys,
@@ -135,7 +136,7 @@ tap.test('earlier/later journeys', async (t) => {
 	t.end()
 })
 
-tap.test('trip details', async (t) => {
+tap.skip('trip details', async (t) => {
 	const res = await client.journeys(tiefstack, barmbek, {
 		results: 1, departure: when
 	})
@@ -149,7 +150,7 @@ tap.test('trip details', async (t) => {
 	t.end()
 })
 
-tap.test('departures at Hamburg Barmbek', async (t) => {
+tap.skip('departures at Hamburg Barmbek', async (t) => {
 	const departures = await client.departures(barmbek, {
 		duration: 5, when,
 	})
@@ -163,7 +164,7 @@ tap.test('departures at Hamburg Barmbek', async (t) => {
 	t.end()
 })
 
-tap.test('departures with station object', async (t) => {
+tap.skip('departures with station object', async (t) => {
 	const deps = await client.departures({
 		type: 'station',
 		id: tiefstack,
@@ -179,7 +180,7 @@ tap.test('departures with station object', async (t) => {
 	t.end()
 })
 
-tap.test('departures at Barmbek in direction of Altona', async (t) => {
+tap.skip('departures at Barmbek in direction of Altona', async (t) => {
 	await testDeparturesInDirection({
 		test: t,
 		fetchDepartures: client.departures,
@@ -192,7 +193,7 @@ tap.test('departures at Barmbek in direction of Altona', async (t) => {
 	t.end()
 })
 
-tap.test('arrivals at Hamburg Barmbek', async (t) => {
+tap.skip('arrivals at Hamburg Barmbek', async (t) => {
 	const arrivals = await client.arrivals(barmbek, {
 		duration: 5, when
 	})
@@ -208,7 +209,7 @@ tap.test('arrivals at Hamburg Barmbek', async (t) => {
 
 // todo: nearby
 
-tap.test('locations named Elbphilharmonie', async (t) => {
+tap.skip('locations named Elbphilharmonie', async (t) => {
 	const elbphilharmonie = '6242'
 	const locations = await client.locations('Elbphilharmonie', {
 		results: 20
@@ -226,7 +227,7 @@ tap.test('locations named Elbphilharmonie', async (t) => {
 	t.end()
 })
 
-tap.test('station Hamburg Barmbek', async (t) => {
+tap.skip('station Hamburg Barmbek', async (t) => {
 	const s = await client.stop(barmbek)
 
 	validate(t, s, ['stop', 'station'], 'station')
@@ -235,7 +236,7 @@ tap.test('station Hamburg Barmbek', async (t) => {
 	t.end()
 })
 
-tap.test('radar', async (t) => {
+tap.skip('radar', async (t) => {
 	const vehicles = await client.radar({
 		north: 53.569,
 		west: 10.022,

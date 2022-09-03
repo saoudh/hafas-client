@@ -4,6 +4,7 @@ const tap = require('tap')
 const isRoughlyEqual = require('is-roughly-equal')
 const maxBy = require('lodash/maxBy')
 const flatMap = require('lodash/flatMap')
+const last = require('lodash/last')
 
 const {createWhen} = require('./lib/util')
 const createClient = require('../..')
@@ -31,7 +32,8 @@ const testServerInfo = require('./lib/server-info')
 const isObj = o => o !== null && 'object' === typeof o && !Array.isArray(o)
 const minute = 60 * 1000
 
-const when = createWhen('Europe/Berlin', 'de-DE')
+const T_MOCK = 1657618200 * 1000 // 2022-07-12T11:30+02:00
+const when = createWhen(dbProfile.timezone, dbProfile.locale, T_MOCK)
 
 const cfg = {
 	when,
@@ -200,7 +202,8 @@ tap.skip('journeys – leg cycle & alternatives', async (t) => {
 		test: t,
 		fetchJourneys: client.journeys,
 		fromId: blnTiergarten,
-		toId: blnJannowitzbrücke
+		toId: blnJannowitzbrücke,
+		when,
 	})
 	t.end()
 })
@@ -255,8 +258,9 @@ tap.skip('journeysFromTrip – U Mehringdamm to U Naturkundemuseum, reroute to S
 				stopovers: true, remarks: false
 			})
 
-			const hasStoppedAtA = t.stopovers
+			const pastStopovers = t.stopovers
 			.filter(st => departureOf(st) < Date.now()) // todo: <= ?
+			const hasStoppedAtA = pastStopovers
 			.find(sameStopOrStation({id: stopAId}))
 			const willStopAtB = t.stopovers
 			.filter(st => arrivalOf(st) > Date.now()) // todo: >= ?
@@ -289,7 +293,8 @@ tap.skip('journeysFromTrip – U Mehringdamm to U Naturkundemuseum, reroute to S
 		clone.price = {amount: 123, currency: 'EUR'}
 		return clone
 	}
-	validate(t, newJourneys.map(withFakePrice), 'newJourneys', 'journeysFromTrip')
+	// todo: there is no such validator!
+	validate(t, newJourneys.map(withFakePrice), 'journeysFromTrip', 'newJourneys')
 
 	for (let i = 0; i < newJourneys.length; i++) {
 		const j = newJourneys[i]
@@ -452,7 +457,7 @@ tap.test('radar', async (t) => {
 	t.end()
 })
 
-tap.test('reachableFrom', async (t) => {
+tap.test('reachableFrom', {timeout: 20 * 1000}, async (t) => {
 	const torfstr17 = {
 		type: 'location',
 		address: 'Torfstraße 17',

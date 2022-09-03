@@ -1,5 +1,52 @@
 # Changelog
 
+## `5.25.0`
+
+- 0a636981 parse `CHKI` (check-in, check-out) legs ✅
+- 7c68f962 `parse{Stopover,JourneyLeg, Trip}`: expose `{arrival,departure}PrognosisType` ✅
+- 95af0a01 `parseArrival` & `parseDeparture`: expose `prognosisType` ✅
+
+[🏷 `5.25.0`](https://github.com/public-transport/hafas-client/releases/tag/5.24.0), 2022-07-30
+
+## `5.24.1`
+
+- 492cb7df KVB: provide CA certificate chain via `Agent` 🐛
+
+[🏷 `5.24.1`](https://github.com/public-transport/hafas-client/releases/tag/5.24.1), 2022-06-23
+
+## `5.24.0`
+
+- 2edcd49e `serverInfo()`: add `opt.versionInfo` 📝✅
+- f3c2ee6f/1236cf63 DB: support age-based tariffs – Thanks @roehrt!
+- 7e1f7ed4 BVG/VBB: parse stop DHIDs ✅
+- f8ca2d5d BVG: only expand `9*` stop IDs to 12 digits 🐛
+- 68ecd7c5 readme: fix `strecken.info` link 📝 – Thanks @fhueter!
+
+[🏷 `5.24.0`](https://github.com/public-transport/hafas-client/releases/tag/5.24.0), 2022-04-26
+
+## `5.23.0`
+
+- 57084262 expose `departure.destination` & `arrival.origin` ✅
+
+[🏷 `5.23.0`](https://github.com/public-transport/hafas-client/releases/tag/5.23.0), 2022-02-23
+
+## `5.22.2`
+
+- f6b144f0 BVG: update API endpoint
+- e3a02297 `lib/request`: tweak `User-Agent` randomisation logic
+- e69d069d/fa9a8d9f update integration tests ✅
+- 2ec079ad TPG: add integration test ✅
+- 4cd0e9d9 minor tweaks 📝
+
+[🏷 `5.22.2`](https://github.com/public-transport/hafas-client/releases/tag/5.22.2), 2022-01-13
+
+## `5.22.1`
+
+- 2fd06941 use [HTTP Keep-Alive](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Keep-Alive) ⚡️
+- 9c10a176 fix request debug-logging 🐛
+
+[🏷 `5.22.1`](https://github.com/public-transport/hafas-client/releases/tag/5.22.1), 2021-12-28
+
 ## `5.22.0`
 
 - ed86ad0b add [*KVB* profile](../p/kvb)

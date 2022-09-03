@@ -6,6 +6,8 @@ const parseLineName = require('vbb-parse-line')
 const getStations = require('vbb-stations')
 const {parseHook} = require('../../lib/profile-hooks')
 
+const parseAndAddLocationDHID = require('../vbb/parse-loc-dhid')
+
 const {
 	parseLine: _parseLine,
 	parseLocation: _parseLocation,
@@ -57,7 +59,7 @@ const parseLineWithMoreDetails = ({parsed}, p) => {
 }
 
 const parseLocation = ({parsed}, l) => {
-	if (parsed.type === 'stop' || parsed.type === 'station') {
+	if ((parsed.type === 'stop' || parsed.type === 'station') && parsed.id[0] === '9') {
 		parsed.name = shorten(parsed.name)
 		parsed.id = to12Digit(parsed.id)
 		if (!parsed.location.latitude || !parsed.location.longitude) {
@@ -65,6 +67,8 @@ const parseLocation = ({parsed}, l) => {
 			if (s) Object.assign(parsed.location, s.location)
 		}
 	}
+
+	parseAndAddLocationDHID(parsed, l)
 	return parsed
 }
 
@@ -154,6 +158,7 @@ const formatStation = (id) => {
 }
 
 // use the Berlkönig ride sharing service?
+// todo: https://github.com/alexander-albers/tripkit/issues/26#issuecomment-825437320
 const requestJourneysWithBerlkoenig = ({opt}, query) => {
 	if (('numF' in query) && opt.berlkoenig) {
 		// todo: check if this is still true

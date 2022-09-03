@@ -9,7 +9,6 @@ const zvvProfile = require('../../p/zvv')
 const products = require('../../p/zvv/products')
 const createValidate = require('./lib/validate-fptf-with')
 const testJourneysStationToStation = require('./lib/journeys-station-to-station')
-const journeysFailsWithNoProduct = require('./lib/journeys-fails-with-no-product')
 const testJourneysStationToAddress = require('./lib/journeys-station-to-address')
 const testJourneysStationToPoi = require('./lib/journeys-station-to-poi')
 const testEarlierLaterJourneys = require('./lib/earlier-later-journeys')
@@ -17,7 +16,8 @@ const testDepartures = require('./lib/departures')
 const testDeparturesInDirection = require('./lib/departures-in-direction')
 const testArrivals = require('./lib/arrivals')
 
-const when = createWhen('Europe/Zurich', 'de-CH')
+const T_MOCK = 1641897000 * 1000 // 2022-01-11T11:30:00+01
+const when = createWhen(zvvProfile.timezone, zvvProfile.locale, T_MOCK)
 
 const validate = createValidate({
 	when,
@@ -77,7 +77,8 @@ tap.test('trip details', async (t) => {
 	t.end()
 })
 
-tap.skip('departures at ETH/Universitätsspital', async (t) => { // todo
+tap.test('departures at ETH/Universitätsspital', async (t) => { // todo
+	const polyterrasseETH = '8503500'
 	const departures = await client.departures(ethUniversitätsspital, {
 		duration: 5, when,
 	})
@@ -86,7 +87,7 @@ tap.skip('departures at ETH/Universitätsspital', async (t) => { // todo
 		test: t,
 		departures,
 		validate,
-		id: ethUniversitätsspital
+		ids: [ethUniversitätsspital, polyterrasseETH],
 	})
 	t.end()
 })

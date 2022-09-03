@@ -11,7 +11,8 @@ const testJourneysStationToStation = require('./lib/journeys-station-to-station'
 const testArrivals = require('./lib/arrivals')
 const testReachableFrom = require('./lib/reachable-from')
 
-const when = createWhen(vbnProfile.timezone, vbnProfile.locale)
+const T_MOCK = 1641897000 * 1000 // 2022-01-11T11:30:00+01
+const when = createWhen(vbnProfile.timezone, vbnProfile.locale, T_MOCK)
 
 const cfg = {
 	when,
@@ -69,9 +70,12 @@ tap.test('arrivals at Bremen Humboldtstr.', async (t) => {
 		duration: 10, when
 	})
 
-	validate(t, arrivals, 'arrivals', 'arrivals')
-	t.ok(arrivals.length > 0, 'must be >0 arrivals')
-	t.same(arrivals, arrivals.sort((a, b) => t.when > b.when))
+	await testArrivals({
+		test: t,
+		arrivals,
+		validate,
+		id: bremenHumboldtstr,
+	})
 	t.end()
 })
 

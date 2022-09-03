@@ -28,7 +28,7 @@ There are also libraries that use `hafas-client` and pass their own profile in:
 
 HAFAS endpoint | library
 ---------------|--------
-[Betriebsstellen & disturbances in the German rail network](https://strecken.info/) | [`db-netz-hafas`](https://github.com/derhuerst/db-netz-hafas)
+[Betriebsstellen & disturbances in the German rail network](http://strecken.info/) | [`db-netz-hafas`](https://github.com/derhuerst/db-netz-hafas)
 
 
 ## Installing
@@ -233,12 +233,14 @@ While `hafas-client` itself should work in the browser via a bundler like [Webpa
 - [`hafas-find-stations`](https://github.com/derhuerst/hafas-find-stations#hafas-find-stations) – Given a HAFAS client, find all stations in a bounding box.
 - [`hafas-collect-departures-at`](https://github.com/public-transport/hafas-collect-departures-at#hafas-collect-departures-at) – Utility to collect departures, using any HAFAS client.
 - [`find-hafas-data-in-another-hafas`](https://github.com/derhuerst/find-hafas-data-in-another-hafas#find-hafas-data-in-another-hafas) – Find data from one HAFAS endpoint in the data of another HAFAS endpoint.
+- [`hafas-gtfs-rt-feed`](https://github.com/derhuerst/hafas-gtfs-rt-feed) – Generate a [GTFS Realtime (GTFS-RT)](https://developers.google.com/transit/gtfs-realtime/) feed by polling a HAFAS endpoint.
 - [`hafas-monitor-trips`](https://github.com/derhuerst/hafas-monitor-trips#hafas-monitor-trips) – Using a HAFAS client, watch all trips in a bounding box.
 - [`hafas-monitor-departures`](https://github.com/derhuerst/hafas-monitor-departures#hafas-monitor-departures) – Pass in a HAFAS client, fetch all departures at any set of stations.
 - [`hafas-record-delays`](https://github.com/derhuerst/hafas-record-delays#hafas-record-delays) – Record delays from `hafas-monitor-departures` into a LevelDB.
 - [`hafas-monitor-journeys`](https://github.com/derhuerst/hafas-monitor-journeys) – Use `hafas-client` to monitor journeys from A to B.
 - [`hafas-discover-stations`](https://github.com/derhuerst/hafas-discover-stations#hafas-discover-stations) – Pass in a HAFAS client, discover stations by querying departures.
 - [`hafas-estimate-station-weight`](https://github.com/derhuerst/hafas-estimate-station-weight#hafas-estimate-station-weight) – Pass in a HAFAS client, estimate the importance of a station.
+- [`db-ticket`](https://github.com/envake/db-tickets) – A library to retrieve ticket information from Deutsche Bahn.
 
 More related libraries can be found [via the npm package index](https://www.npmjs.com/search?q=hafas).
 

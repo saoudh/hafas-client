@@ -8,12 +8,12 @@ const svvProfile = require('../../p/svv')
 const products = require('../../p/svv/products')
 const createValidate = require('./lib/validate-fptf-with')
 const testJourneysStationToStation = require('./lib/journeys-station-to-station')
-const testRefreshJourney = require('./lib/refresh-journey')
 const testArrivals = require('./lib/arrivals')
 const testReachableFrom = require('./lib/reachable-from')
 const testServerInfo = require('./lib/server-info')
 
-const when = createWhen(svvProfile.timezone, svvProfile.locale)
+const T_MOCK = 1641897000 * 1000 // 2022-01-11T11:30:00+01
+const when = createWhen(svvProfile.timezone, svvProfile.locale, T_MOCK)
 
 const cfg = {
 	when,
@@ -77,9 +77,12 @@ tap.test('arrivals at Volksgarten', async (t) => {
 		duration: 10, when
 	})
 
-	validate(t, arrivals, 'arrivals', 'arrivals')
-	t.ok(arrivals.length > 0, 'must be >0 arrivals')
-	t.same(arrivals, arrivals.sort((a, b) => t.when > b.when))
+	await testArrivals({
+		test: t,
+		arrivals,
+		validate,
+		id: volksgarten,
+	})
 	t.end()
 })
 

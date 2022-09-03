@@ -1,7 +1,7 @@
 {
 	"name": "hafas-client",
 	"description": "Client for HAFAS public transport APIs.",
-	"version": "5.22.0",
+	"version": "5.25.0",
 	"main": "index.js",
 	"files": [
 		"index.js",
@@ -21,9 +21,11 @@
 		"Adrian Böhme <hannsadrian@gmail.com> (https://github.com/Adwirawien)",
 		"Yureka <github@yuka.dev>",
 		"Kristjan Esperanto (https://github.com/KristjanESPERANTO)",
-		"Marcel Radzio <mtrnord@nordgedanken.dev>"
+		"Marcel Radzio <mtrnord@nordgedanken.dev>",
+		"Benoit Deldicque (https://github.com/bddq)",
+		"roehrt"
 	],
-	"homepage": "https://github.com/public-transport/hafas-client/tree/5.22.0",
+	"homepage": "https://github.com/public-transport/hafas-client/tree/5.25.0",
 	"repository": "public-transport/hafas-client",
 	"bugs": "https://github.com/public-transport/hafas-client/issues",
 	"funding": {
@@ -70,7 +72,7 @@
 		"is-coordinates": "^2.0.2",
 		"is-roughly-equal": "^0.1.0",
 		"replayer": "^2.2.3",
-		"tap": "^15.0.9",
+		"tap": "^15.2.3",
 		"validate-fptf": "^3.0.0"
 	},
 	"scripts": {

@@ -247,8 +247,11 @@ module.exports = [
 		delay: 1020,
 		platform: null,
 		plannedPlatform: null,
+		prognosisType: 'prognosed',
 		direction: null,
 		provenance: 'Rathaus Spandau (S+U), Berlin',
+		origin: null,
+		destination: null,
 		line: {
 			type: 'line',
 			id: '7-vbbbvu-7',

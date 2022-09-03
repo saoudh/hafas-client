@@ -27,11 +27,22 @@ const createParseArrOrDep = (prefix) => {
 			stop: d.stbStop.location || null,
 			...profile.parseWhen(ctx, d.date, tPlanned, tPrognosed, tzOffset, cancelled),
 			...profile.parsePlatform(ctx, plPlanned, plPrognosed, cancelled),
+			prognosisType: profile.parsePrognosisType(ctx, d.stbStop[prefix + 'ProgType']) || null,
 			// todo: for arrivals, this is the *origin*, not the *direction*
 			direction: prefix === DEPARTURE && d.dirTxt && profile.parseStationName(ctx, d.dirTxt) || null,
 			provenance: prefix === ARRIVAL && d.dirTxt && profile.parseStationName(ctx, d.dirTxt) || null,
 			line: d.line || null,
-			remarks: []
+			remarks: [],
+			origin: null,
+			destination: null
+		}
+
+		if (prefix === DEPARTURE && Array.isArray(d.prodL) && d.prodL[0].tLocX) {
+			res.destination = profile.parseLocation(ctx, ctx.res.common.locL[d.prodL[0].tLocX])
+		}
+
+		if (prefix === ARRIVAL && Array.isArray(d.prodL) && d.prodL[0].fLocX) {
+			res.origin = profile.parseLocation(ctx, ctx.res.common.locL[d.prodL[0].fLocX])
 		}
 
 		if (d.pos) {
