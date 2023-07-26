@@ -165,10 +165,27 @@ const request = (ctx, userAgent, reqData) => {
 		'ver', // HAFAS protocol version
 		'auth', // static authentication
 	]))
+
 	const currentProxyIP = getNextProxy();
+
 	const proxyAgent = getAgent() //new HttpProxyAgent(currentProxyIP);//getAgent();
 	const proxyAgent2 = getAgent2() //new HttpProxyAgent(currentProxyIP);//getAgent();
-	console.log("REQUEST.JS-3")
+	const req = profile.transformReq(ctx, {
+		agent: proxyAgent,
+		method: 'post',
+		// todo: CORS? referrer policy?
+		body: JSON.stringify(body),
+		headers: {
+			'Authorization': 'cleverroute',
+			'Content-Type': 'application/json',
+			'Accept-Encoding': 'gzip, br, deflate',
+			'Accept': 'application/json',
+			'user-agent': randomizeUserAgent(userAgent),
+			'connection': 'keep-alive', // prevent excessive re-connecting
+		},
+		redirect: 'follow',
+		query: {}
+	})
 
 	const req2 = profile.transformReq(ctx, {
 		agent: proxyAgent2,
@@ -185,26 +202,9 @@ const request = (ctx, userAgent, reqData) => {
 		redirect: 'follow',
 		query: {}
 	})
-	console.log("REQUEST.JS-4")
-		const req = currentProxyIP ? profile.transformReq(ctx, {
-		agent: proxyAgent,
-		method: 'post',
-		// todo: CORS? referrer policy?
-		body: JSON.stringify(body),
-		headers: {
-			'Authorization': 'cleverroute',
-			'Content-Type': 'application/json',
-			'Accept-Encoding': 'gzip, br, deflate',
-			'Accept': 'application/json',
-			'user-agent': randomizeUserAgent(userAgent),
-			'connection': 'keep-alive', // prevent excessive re-connecting
-		},
-		redirect: 'follow',
-		query: {}
-	}) : req2;
-	console.log("REQUEST.JS-5")
+
 	if (DEBUG) console.error(req.body)
-	console.log("REQUEST.JS-6")
+
 	if (profile.addChecksum || profile.addMicMac) {
 		if (!Buffer.isBuffer(profile.salt) && 'string' !== typeof profile.salt) {
 			throw new TypeError('profile.salt must be a Buffer or a string.')
@@ -229,8 +229,6 @@ const request = (ctx, userAgent, reqData) => {
 		}
 	}
 
-	console.log("REQUEST.JS-7")
-
 	if (profile.addChecksum || profile.addMicMac) {
 		if (!Buffer.isBuffer(profile.salt) && 'string' !== typeof profile.salt) {
 			throw new TypeError('profile.salt must be a Buffer or a string.')
@@ -254,40 +252,26 @@ const request = (ctx, userAgent, reqData) => {
 			req2.query.mac = mac.toString('hex')
 		}
 	}
-	console.log("REQUEST.JS-8")
 	let url = ""
 
+	url = currentProxyIP + '/' + stringify(req.query) + `?target=${encodeURIComponent(profile.endpoint)}`
 	const url2 = profile.endpoint + '?' + stringify(req.query)
-	console.log("REQUEST.JS-9")
-	url = currentProxyIP ? currentProxyIP + '/' + stringify(req.query) + `?target=${encodeURIComponent(profile.endpoint)}` : url2;
 	// }
-		// Async stack traces are not supported everywhere yet, so we create our own.
-		const err = new Error()
-		err.isHafasError = true // todo: rename to `isHafasClientError`
-		err.request = req.body // todo: commit as bugfix
-		err.url = url
-		captureStackTrace(err)
-	console.log("REQUEST.JS-10")
-	console.log("before fetching simpleProxying...-params=",new URLSearchParams({...req2.query, targetUrl: profile.endpoint}))
-	 return fetch("https://cr-proxy.cleverreach.net/simpleProxying?"+new URLSearchParams({...req2.query, targetUrl: profile.endpoint}).toString(), { method: 'POST',
-	 headers: { 'Content-Type': 'application/json' },
-	 body: JSON.stringify(body)}).then(res => {console.log("API-fetching-res:", res); return res}).then((res) => {
-		return computeJsonOfResponse(res, err);
-	})
-	.then((b) => {
-		return parseJsonResponse(b, err, profile, ctx);
-	})
-	.catch(err => console.log(new Error("API-fetching-error:"+ err)));
 
 	proxyUsage[currentProxyIP] = proxyUsage[currentProxyIP] + 1;
 
 	console.log("proxyUsage:", proxyUsage)
-
+	// Async stack traces are not supported everywhere yet, so we create our own.
+	const err = new Error()
+	err.isHafasError = true // todo: rename to `isHafasClientError`
+	err.request = req.body // todo: commit as bugfix
+	err.url = url
+	captureStackTrace(err)
 
 	const controller = new AbortController()
 
 
-	// start timer and call handling for unavailablity of the server if it timeouts without response
+
 	const timeoutId = setTimeout(() => {
 		console.log(' --- ABORTING REQUEST --- ' + currentProxyIP); controller.abort();
 		
@@ -296,14 +280,13 @@ const request = (ctx, userAgent, reqData) => {
 		
 	}, 10000)
 
-	console.log("request.js - URL to request: ", url)
+
 	return fetch(url, { ...req, signal: controller.signal })
 		.then((res) => {
 			return computeJsonOfResponse(res, err);
 		})
 		.then((b) => {
 			let res = parseJsonResponse(b, err, profile, ctx);
-			// if the server responded, then clear timeout
 			clearTimeout(timeoutId);
 			return res;
 		}).catch(err => {
@@ -324,10 +307,10 @@ const request = (ctx, userAgent, reqData) => {
 
 function handleAvailabilityOfServer(currentProxyIP) {
 	const controller = new AbortController()
-	let index = proxies.findIndex((ip) => ip === currentProxyIP);
 
 	const timeoutId = setTimeout(() => {
 		console.log(' --- ABORTING REQUEST --- ' + currentProxyIP); controller.abort();
+		let index = proxies.findIndex(ip => ip === currentProxyIP);
 		if (index >= 0) {
 				let deletedProxy = proxies.splice(index, 1);
 				console.log('deleting proxy in timeout: ', deletedProxy, " - resulting proxy-list: ", proxies);
