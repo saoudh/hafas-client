@@ -4,12 +4,8 @@ const baseProfile = require('./base.json')
 const products = require('./products')
 const _parseJourney = require('../../parse/journey')
 const { parseHook } = require('../../lib/profile-hooks')
+const parseJourneyWithTickets = require('../../parse/journey-with-price')
 
-const parseJourneyWithTickets = ({ parsed }, j) => {
-	const parsedCpy = { ...parsed, price: j.trfRes?.totalPrice?.amount };
-
-	return parsedCpy;
-}
 
 const nvvProfile = {
 	...baseProfile,
