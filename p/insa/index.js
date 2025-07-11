@@ -5,7 +5,7 @@ const products = require('./products')
 const _parseJourney = require('../../parse/journey')
 const { parseHook } = require('../../lib/profile-hooks')
 
-const { formatLocationIdentifier } = require('../../format/location-identifier.js');
+const formatLocationIdentifier = require('../../format/location-identifier.js');
 
 const formatStation = (id) => {
 	return {
